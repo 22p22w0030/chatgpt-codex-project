@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{anchors,pointAt,distance}from'../dist/domain.mjs';
+test('full road geometry replaces six straight anchors',()=>assert.ok(anchors.length>6));
+test('one second advances ten metres on straight road section',()=>assert.ok(Math.abs(distance(pointAt(0),pointAt(1))-10)<.15));
+import{cumulative,roadSlice,totalSeconds,routeLength}from'../dist/domain.mjs';
+test('every road vertex survives trail rendering',()=>{assert.deepEqual(roadSlice(0,totalSeconds),anchors);});
+test('all animation positions lie on source road segments',()=>{for(let t=0;t<totalSeconds;t+=.1){const p=pointAt(t),m=t*10;let i=1;while(cumulative[i]<m)i++;const a=anchors[i-1],b=anchors[i];const dx=b[1]-a[1],dy=b[0]-a[0];const cross=(p[1]-a[1])*dy-(p[0]-a[0])*dx;assert.ok(Math.abs(cross)<1e-12);assert.ok(distance(a,p)<=distance(a,b)+.001);}});
+test('route ends at final road vertex',()=>{assert.deepEqual(pointAt(totalSeconds),anchors.at(-1));assert.ok(routeLength>3000&&routeLength<3300);});
+test('trail slice includes intervening corners',()=>{const a=cumulative[5]/10-.1,b=cumulative[8]/10+.1;const slice=roadSlice(a,b);for(let i=5;i<=8;i++)assert.ok(slice.some(p=>p[0]===anchors[i][0]&&p[1]===anchors[i][1]));});
+import{makeFeed}from'../dist/domain.mjs';
+test('feed pauses resumes resets and emits terminal position',()=>{const originalSet=globalThis.setInterval,originalClear=globalThis.clearInterval;let callback,clears=0;globalThis.setInterval=fn=>(callback=fn,1);globalThis.clearInterval=()=>clears++;try{const feed=makeFeed();let last,n=0,done=0;const receive=e=>{last=e;n++;};feed.start(receive,()=>done++);callback();assert.equal(n,1);feed.pause();assert.equal(clears,1);feed.start(receive,()=>done++);for(let k=1;k<=Math.ceil(totalSeconds*10);k++)callback();assert.equal(done,1);assert.equal(feed.completed,true);assert.deepEqual([last.latitude,last.longitude],anchors.at(-1));feed.reset();assert.equal(feed.completed,false);feed.start(receive,()=>done++);callback();assert.deepEqual([last.latitude,last.longitude],anchors[0]);}finally{globalThis.setInterval=originalSet;globalThis.clearInterval=originalClear;}});

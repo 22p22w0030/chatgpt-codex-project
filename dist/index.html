@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0d2430">
+  <title>Vanguard · FakeBTS Portal</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="leaflet.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="modulepreload" href="portal-controller.mjs">
+</head>
+<body>
+  <main class="portal-shell">
+    <section class="portal-view view-login" data-view="login">
+      <div class="login-brand" aria-hidden="true">
+        <span class="logo logo-large">V</span>
+        <span>VANGUARD</span>
+      </div>
+      <div class="login-card">
+        <span class="eyebrow">FAKEBTS OPERATIONS / DEMO</span>
+        <h1 tabindex="-1">เข้าสู่ระบบ</h1>
+        <p>พอร์ทัลสาธิตการติดตามเป้าหมายสังเคราะห์</p>
+        <form id="login-form" novalidate>
+          <label for="login-username">ชื่อผู้ใช้</label>
+          <input id="login-username" name="username" autocomplete="username" required>
+          <label for="login-password">รหัสผ่าน</label>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+          <p id="login-error" class="form-error" role="alert" aria-live="polite" hidden></p>
+          <button class="primary wide" type="submit">เข้าสู่ระบบ</button>
+        </form>
+        <p class="demo-note">บัญชีสำหรับสาธิตเท่านั้น · ไม่มีข้อมูลเครือข่ายจริง</p>
+      </div>
+    </section>
+
+    <section class="portal-view" data-view="home" hidden>
+      <header class="page-header">
+        <div class="brand"><span class="logo">V</span><div><b>VANGUARD</b><small>OPERATIONS PORTAL</small></div></div>
+      </header>
+      <div class="page-content">
+        <span class="eyebrow">COMMAND CENTER / DEMO</span>
+        <h1 tabindex="-1">หน้าหลัก</h1>
+        <p>เลือกเครื่องมือสำหรับภาพรวมและการติดตาม FakeBTS</p>
+        <div class="feature-grid">
+          <button class="feature-card" type="button" data-open-view="dashboard">
+            <span class="feature-icon" aria-hidden="true">◫</span>
+            <strong>Dashboard</strong>
+            <small>ภาพรวม FakeBTS ทั่วประเทศ</small>
+          </button>
+          <button class="feature-card accent" type="button" data-open-view="regions">
+            <span class="feature-icon" aria-hidden="true">◎</span>
+            <strong>Tracking FakeBTS</strong>
+            <small>เลือกพื้นที่และเริ่มการติดตามสาธิต</small>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="portal-view" data-view="dashboard" hidden>
+      <header class="page-header">
+        <div class="brand"><span class="logo">V</span><div><b>VANGUARD</b><small>NATIONAL OVERVIEW</small></div></div>
+      </header>
+      <div class="page-content dashboard-layout">
+        <div>
+          <span class="eyebrow">DASHBOARD / THAILAND</span>
+          <h1 tabindex="-1">ภาพรวม FakeBTS</h1>
+          <p>จำนวนเป้าหมายสังเคราะห์แยกตามภูมิภาค</p>
+          <div class="metric-card">
+            <span>FakeBTS ทั้งหมด</span>
+            <strong id="dashboard-total">17</strong>
+            <small>DEMO TARGETS</small>
+          </div>
+          <div id="dashboard-region-summary" class="region-summary" aria-label="จำนวนแยกตามภูมิภาค"></div>
+        </div>
+        <div id="dashboard-map" class="dashboard-map" role="img" aria-label="แผนที่ประเทศไทยแสดงจำนวน FakeBTS ตามภูมิภาค">
+          <p>กำลังเตรียมแผนที่ประเทศไทย…</p>
+          <small>ข้อมูลสาธิต · แผนที่ © OpenStreetMap contributors</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="portal-view" data-view="regions" hidden>
+      <header class="page-header">
+        <div class="brand"><span class="logo">V</span><div><b>VANGUARD</b><small>REGION SELECTOR</small></div></div>
+      </header>
+      <div class="page-content">
+        <span class="eyebrow">TRACKING / STEP 1</span>
+        <h1 tabindex="-1">เลือกภูมิภาค</h1>
+        <p>เลือกพื้นที่เพื่อดูผลการค้นหา FakeBTS</p>
+        <div id="region-list" class="region-list"></div>
+      </div>
+    </section>
+
+    <section class="portal-view" data-view="result" hidden>
+      <header class="page-header">
+        <div class="brand"><span class="logo">V</span><div><b>VANGUARD</b><small>REGION RESULT</small></div></div>
+      </header>
+      <div class="page-content result-layout">
+        <div>
+          <span class="eyebrow">TRACKING / STEP 2</span>
+          <h1 tabindex="-1">ผลการค้นหาตามภูมิภาค</h1>
+          <p>อันดับจังหวัดจากข้อมูลสังเคราะห์</p>
+          <label for="province-filter">กรองจังหวัด</label>
+          <select id="province-filter"><option value="">ทุกจังหวัด</option></select>
+          <ol id="province-ranking" class="province-ranking" aria-label="อันดับจังหวัด"></ol>
+        </div>
+        <div class="result-card">
+          <div id="result-state" class="result-state" role="status" aria-live="polite">
+            <span class="state-mark" aria-hidden="true">—</span>
+            <strong>เลือกภูมิภาคเพื่อดูผลลัพธ์</strong>
+          </div>
+          <button id="open-tracking" class="primary wide" type="button" hidden>เริ่ม Tracking</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="portal-view view-tracking" data-view="tracking" hidden>
+      <header class="page-header tracking-header">
+        <div class="brand"><span class="logo">V</span><div><b>VANGUARD</b><small>FAKEBTS TRACKING</small></div></div>
+        <button id="help" aria-label="วิธีใช้งาน">?</button>
+      </header>
+      <div class="top">
+        <span class="eyebrow">FIELD TRACKING / DEMO</span>
+        <h1 tabindex="-1">ติดตามตำแหน่ง</h1>
+        <p>เป้าหมายจำลอง · วิ่งตามถนน OSM · 36 กม./ชม.</p>
+        <div class="modes">
+          <button id="demo" class="selected">จำลองการติดตาม</button>
+          <button id="gps">ใช้ตำแหน่งของฉัน</button>
+        </div>
+      </div>
+      <div class="maparea">
+        <div id="map" aria-label="แผนที่ตำแหน่งเป้าหมายและผู้ใช้"></div>
+        <div class="maptop"><span id="maplabel">แผนที่สาธิต</span><span>N ↑</span></div>
+        <div class="mapbuttons">
+          <button id="follow" title="ติดตามเป้าหมาย" aria-label="ติดตามเป้าหมาย">◎</button>
+          <button id="me" title="ตำแหน่งของฉัน" aria-label="ตำแหน่งของฉัน">⌖</button>
+          <button id="fit" title="ดูทั้งสองตำแหน่ง" aria-label="ดูทั้งสองตำแหน่ง">⛶</button>
+        </div>
+        <div class="legend"><span><i class="red"></i>เป้าหมายจำลอง</span><span><i class="blue"></i><span id="youlabel">ผู้ติดตามจำลอง</span></span></div>
+      </div>
+      <div class="bottom">
+        <div class="targetrow">
+          <div><span class="eyebrow">TARGET 01</span><h2>FakeBTS <small>DEMO</small></h2></div>
+          <span id="status" role="status" aria-live="polite">พร้อมเริ่ม</span>
+        </div>
+        <div class="stats">
+          <div><label>ระยะห่างเส้นตรง</label><strong id="distance">—</strong></div>
+          <div><label>ความเชื่อมั่น</label><strong id="confidence">—</strong></div>
+          <div><label>อัปเดตล่าสุด</label><strong id="updated">—</strong></div>
+        </div>
+        <p id="notice" role="status">กดเริ่มเพื่อดูการเคลื่อนที่ของเป้าหมายและผู้ติดตามจำลอง</p>
+        <div class="actions">
+          <button id="start" class="primary">▶ เริ่มติดตาม</button>
+          <button id="tracking-stop" type="button">■ หยุด</button>
+          <button id="reset">↺ เริ่มใหม่</button>
+        </div>
+        <div id="export-panel" class="export-panel" hidden>
+          <span class="eyebrow">EXPORT SYNTHETIC TRACK</span>
+          <div id="save-local" class="export-group" role="group" aria-label="บันทึกไฟล์ในอุปกรณ์">
+            <button id="save-local-csv" type="button">ดาวน์โหลด CSV</button>
+            <button id="save-local-geojson" type="button">ดาวน์โหลด GeoJSON</button>
+          </div>
+          <button id="save-drive" type="button">ส่งไป Google Drive</button>
+          <p id="export-result" class="export-result" role="status" aria-live="polite"></p>
+        </div>
+        <div class="foot"><span id="gpsstate">ตำแหน่งผู้ติดตาม: จำลอง</span><button id="install">ติดตั้งแอป ↗</button></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="portal-nav" aria-label="การนำทางหลัก" hidden>
+    <button id="nav-back" type="button">← กลับ</button>
+    <button id="nav-home" type="button">⌂ หน้าหลัก</button>
+    <button id="nav-logout" type="button">ออกจากระบบ</button>
+  </nav>
+
+  <dialog id="dialog">
+    <h2>ทดลองติดตามบนมือถือ</h2>
+    <p>1. กดเริ่มติดตามเพื่อเล่นเส้นทางจำลอง</p>
+    <p>2. เลือก “ใช้ตำแหน่งของฉัน” และอนุญาต Location เพื่อดูตำแหน่งจริงพร้อมวงความแม่นยำ</p>
+    <p>เป้าหมายเป็นข้อมูลจำลองบนเส้นทางขับรถ OSM จริง ยังไม่ได้เชื่อมระบบ HMM/Viterbi จริง ระยะห่างในโหมด GPS คือระยะถึงเป้าหมายสมมติ</p>
+    <p>ตำแหน่งจริงอยู่ในหน่วยความจำของแอป และโหมด GPS ปิดแผนที่ภายนอกเพื่อไม่ส่งพื้นที่ของผู้ใช้ไปยังผู้ให้บริการแผนที่ เปิดแอปค้างไว้ระหว่างติดตาม เมื่อซ่อนหน้าจอการจำลองจะพัก</p>
+    <p>ติดตั้ง: Android ใช้เมนู “ติดตั้งแอป”; iPhone ใช้ Share → Add to Home Screen</p>
+    <button id="close" class="primary">เข้าใจแล้ว</button>
+  </dialog>
+
+  <script src="leaflet.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
